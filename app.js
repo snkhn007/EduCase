@@ -6,7 +6,7 @@ const {body, validationResult} = require('express-validator');
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
-const {addSchool, postAddSchool, getSchools} = require('./controller/mainController');
+const {addSchool, postAddSchool, getSchools, delAll} = require('./controller/mainController');
 const {inputValidation} = require('./middlewares/schoolValidation');
 
 app.get('/addSchool', addSchool);
@@ -18,7 +18,9 @@ app.get('/addSchool', addSchool);
 // longitude (FLOAT)
 app.post('/addSchool', inputValidation , postAddSchool);
 
-app.get('/listSchools', getSchools)
+app.get('/listSchools', getSchools);
+
+// app.get('/kill', delAll);
 
 app.listen(3000, ()=>{
     console.log("Started.....");

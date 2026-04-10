@@ -34,20 +34,73 @@ exports.postAddSchool = (req, res)=>{
     })
 }
 
-exports.getSchools = (req, res)=>{
-    // res.send('List of Schools');
-    // const lat = req.body.latitude;
-    // const long = req.bosy.longitude;
-    Schools.fetchAll().then(([rows, fields])=>{
-        // lat.isString().withMessage('Name must be a valid String');
-        // long.isString().withMessage('Name must be a valid String');
-
-        // for(let i=0; i<rows.size(); i++){
-        //     const dist = 
-        // }
-        res.send(rows);
+exports.delAll = (req, res)=>{
+    Schools.delete().then(()=>{
+        res.sen("Deleted All");
+        console.log("Deleted All");
     }).catch((err)=>{
-        res.send(err);
-    })
-    
+        res.send("Error Deleting all");
+    });
+}
+
+exports.getSchools = (req, res) => {
+    const lat = parseFloat(req.query.latitude);
+    const long = parseFloat(req.query.longitude);
+
+    if (isNaN(lat) || isNaN(long)) {
+        return res.status(400).json({
+            message: 'Valid latitude and longitude are required'
+        });
+    }
+
+    Schools.fetchAll()
+        .then(([rows, fields]) => {
+            const schoolsWithDistance = [];
+
+            for (let i = 0; i < rows.length; i++) {
+                const dist = calculateDistance(
+                    lat,
+                    long,
+                    parseFloat(rows[i].latitude),
+                    parseFloat(rows[i].longitude)
+                );
+
+                schoolsWithDistance.push({
+                    ...rows[i],
+                    distance: dist
+                });
+            }
+
+            schoolsWithDistance.sort((a, b) => a.distance - b.distance);
+
+            res.status(200).json(schoolsWithDistance);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json({
+                message: 'Error fetching schools'
+            });
+        });
+};
+
+function toRadians(degree) {
+  return degree * (Math.PI / 180);
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const earthRadius = 6371; // in kilometers
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+    Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadius * c;
 }

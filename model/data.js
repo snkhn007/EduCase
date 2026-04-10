@@ -16,6 +16,10 @@ module.exports = class Schools{
     }
 
     static fetchAll(){
-        return db.execute('SELECT * FROM schools')
+        return db.execute('SELECT * FROM schools');
+    }
+
+    static delete(){
+        return db.execute('DELETE FROM schools');
     }
 }
